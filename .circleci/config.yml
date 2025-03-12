@@ -21,15 +21,11 @@ jobs:
           name: Set Qt5 Environment
           command: echo 'export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5' >> $BASH_ENV
       - run:
-          name: Find CMakeLists.txt
-          command: |
-            find . -name CMakeLists.txt -print
-      - run:
           name: Configure CMake
           command: |
-            if [ -f seer/src/CMakeLists.txt ]; then 
-              mkdir -p seer/src/build
-              cd seer/src/build
+            if [ -f src/CMakeLists.txt ]; then 
+              mkdir -p src/build
+              cd src/build
               cmake -DQTVERSION=QT5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 ..
             else
               echo "CMakeLists.txt not found in the expected location."
@@ -38,17 +34,17 @@ jobs:
       - run:
           name: Build SeerGDB
           command: |
-            cd seer/src/build
+            cd src/build
             make seergdb
       - run:
           name: Install SeerGDB
           command: |
-            cd seer/src/build
+            cd src/build
             sudo make install
       - run:
           name: Package as .deb
           command: |
-            cd seer
+            cd src
             dpkg-buildpackage
 workflows:
   build_and_release:
