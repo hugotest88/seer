@@ -1,53 +1,75 @@
 version: 2.1
 
 executors:
-  qt-executor:
+  linux-builder:
     docker:
-      - image: cimg/base:current
-    working_directory: ~/project
+      - image: cimg/base:2024.01
+    resource_class: large
 
 jobs:
-  build:
-    executor: qt-executor
+  build-ubuntu:
+    executor: linux-builder
     steps:
       - checkout
+
       - run:
-          name: Update ubuntu
-          command: sudo apt-get update
-      - run:
-          name: Install Qt5 Libraries
+          name: Install Dependencies
           command: |
-            sudo apt-get install -y qtbase5-dev qtdeclarative5-dev libqt5gui5 libqt5widgets5 libqt5core5a
-      - run:
-          name: Set Qt5 Environment
-          command: echo 'export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5' >> $BASH_ENV
+            sudo apt-get update
+            sudo apt-get install -y cmake g++ \
+                                  qt6-base-dev \
+                                  qt6-charts-dev \
+                                  libqt6svg6-dev \
+                                  qt6-base-dev-tools \
+                                  ninja-build
+
       - run:
           name: Configure CMake
           command: |
-            if [ -f src/CMakeLists.txt ]; then 
-              mkdir -p src/build
-              cd src/build
-              cmake -DQTVERSION=QT5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 ..
-            else
-              echo "CMakeLists.txt not found in the expected location."
-              exit 1
-            fi
+            cd src
+            cmake -B build -DQTVERSION=QT6 -DCMAKE_BUILD_TYPE=Release
+
       - run:
-          name: Build SeerGDB
-          command: |
-            cd src/build
-            make seergdb
-      - run:
-          name: Install SeerGDB
-          command: |
-            cd src/build
-            sudo make install
-      - run:
-          name: Package as .deb
+          name: Build
           command: |
             cd src
-            dpkg-buildpackage
+            cmake --build build --config Release --target seergdb --parallel $(nproc)
+
+      - run:
+          name: Package Release
+          command: |
+            cd src/build
+            cp ../../LICENSE .
+            cp ../../CHANGELOG.md .
+            tar zcvf seergdb.tar.gz LICENSE CHANGELOG.md seergdb
+
+      - store_artifacts:
+          path: src/build/seergdb.tar.gz
+          destination: seergdb-linux.tar.gz
+
+  build-debian-package:
+    executor: linux-builder
+    steps:
+      - checkout
+
+      - run:
+          name: Install Build Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get -y install devscripts build-essential dpkg-dev equivs
+            sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
+
+      - run:
+          name: Build Debian Package
+          command: dpkg-buildpackage --unsigned-source --unsigned-changes
+
+      - store_artifacts:
+          path: ../seergdb_*_amd64.deb
+          destination: seergdb-debian.deb
+
 workflows:
-  build_and_release:
+  version: 2
+  build-all:
     jobs:
-      - build
+      - build-ubuntu
+      - build-debian-package
