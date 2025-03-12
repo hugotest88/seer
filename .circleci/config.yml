@@ -15,9 +15,17 @@ jobs:
           name: Update ubuntu
           command: sudo apt-get update
       - run:
-          name: Install Qt
+          name: Install Qt6
           command: |
-            sudo apt-get install -y qtbase5-dev libqt5charts5-dev
+            wget https://download.qt.io/official_releases/qt/6.2/6.2.4/single/qt-everywhere-src-6.2.4.tar.xz
+            tar -xf qt-everywhere-src-6.2.4.tar.xz
+            cd qt-everywhere-src-6.2.4
+            ./configure -prefix /opt/qt6 -opensource -confirm-license -nomake tests -nomake examples
+            make -j$(nproc)
+            sudo make install
+      - run:
+          name: Set Qt6 Environment
+          command: echo 'export CMAKE_PREFIX_PATH=/opt/qt6' >> $BASH_ENV
       - run:
           name: Where Am I
           command: |
@@ -31,7 +39,7 @@ jobs:
           name: Configure CMake
           command: |
             cd src
-            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_PREFIX_PATH=/opt/qt6
       - run:
           name: Build
           command: |
