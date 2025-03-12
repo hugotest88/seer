@@ -24,11 +24,7 @@ workflows:
   version: 2
   conditional-workflow:
     jobs:
-      - wait-job:
-          context: wait-context
+      - wait-job
       - hello-world-job:
           requires:
             - wait-job
-          filters:
-            branches:
-              only: /cancelled/
