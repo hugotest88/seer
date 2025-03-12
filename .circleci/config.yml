@@ -33,7 +33,12 @@ jobs:
           name: Configure CMake
           command: |
             cd src
-            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
+            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 -DQTVERSION=QT5
+      - run:
+          name: Echo Qt Version
+          command: |
+            cd src
+            cmake -L $PWD/src/build | grep QTVERSION
       - run:
           name: Build
           command: |
