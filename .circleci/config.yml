@@ -28,6 +28,3 @@ workflows:
       - hello-world-job:
           requires:
             - wait-job
-          filters:
-            branches:
-              only: /cancelled/
