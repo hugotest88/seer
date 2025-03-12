@@ -15,9 +15,14 @@ jobs:
           name: Update ubuntu
           command: sudo apt-get update
       - run:
-          name: Install Qt
+          name: Add Qt Repository
           command: |
-            sudo apt-get install -y qtbase5-dev qtcharts5-dev
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository ppa:beineri/opt-qt-6.2.4-bionic
+            sudo apt-get update
+      - run:
+          name: Install Qt
+          command: sudo apt-get install -y qt6-base-dev qt6-charts-dev
       - run:
           name: Where Am I
           command: |
