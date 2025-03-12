@@ -4,6 +4,9 @@ executors:
   default-executor:
     docker:
       - image: cimg/base:2024.01
+  playwright-executor:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.37.0-focal
 
 jobs:
   wait-job:
@@ -20,6 +23,17 @@ jobs:
           name: Echo Hello World
           command: echo "Hello World"
 
+  playwright-tests:
+    executor: playwright-executor
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - run:
+          name: Run Playwright tests
+          command: npx playwright test
+
 workflows:
   version: 2
   conditional-workflow:
@@ -28,3 +42,6 @@ workflows:
       - hello-world-job:
           requires:
             - wait-job: canceled
+      - playwright-tests:
+          requires:
+            - hello-world-job
