@@ -38,7 +38,7 @@ jobs:
           name: Echo Qt Version
           command: |
             cd src
-            cmake --build $PWD/src/build --target help | grep "Compile with QT"
+            cmake -L $PWD/src/build | grep "QTVERSION"
       - run:
           name: Build
           command: |
