@@ -15,8 +15,11 @@ jobs:
           name: Update ubuntu
           command: sudo apt-get update
       - run:
-          name: Install Qt
-          command: sudo apt-get install -y qtbase5-dev libqt5charts5-dev
+          name: Install Qt5
+          command: sudo apt-get install -y qtbase5-dev libqt5charts5-dev libqt5printsupport5
+      - run:
+          name: Set Qt5 Environment
+          command: echo 'export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5' >> $BASH_ENV
       - run:
           name: Where Am I
           command: |
