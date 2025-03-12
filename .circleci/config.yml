@@ -1,31 +1,58 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
-jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/executor-intro/ & https://circleci.com/docs/configuration-reference/#executor-job
+executors:
+  qt-executor:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
       - image: cimg/base:current
+    working_directory: ~/project
 
-    # Add steps to the job
-    # See: https://circleci.com/docs/jobs-steps/#steps-overview & https://circleci.com/docs/configuration-reference/#steps
+jobs:
+  build:
+    executor: qt-executor
     steps:
-      # Checkout the code as the first step.
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Update ubuntu
+          command: sudo apt-get update
+      - run:
+          name: Install Qt
+          command: |
+            wget https://download.qt.io/official_releases/qt/6.2/6.2.4/qt-opensource-linux-x64-6.2.4.run
+            chmod +x qt-opensource-linux-x64-6.2.4.run
+            ./qt-opensource-linux-x64-6.2.4.run --script install-deps
+      - run:
+          name: Where Am I
+          command: |
+            pwd
+            ls -l
+            lscpu
+      - run:
+          name: Versions
+          command: g++ --version
+      - run:
+          name: Configure CMake
+          command: |
+            cd src
+            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+      - run:
+          name: Build
+          command: |
+            cd src
+            cmake --build $PWD/src/build --config ${BUILD_TYPE} --target seergdb --parallel $(nproc)
+      - run:
+          name: Tar
+          command: |
+            cd src/build
+            cp ../../LICENSE .
+            cp ../../CHANGELOG.md .
+            tar zcvf seergdb.tar.gz LICENSE CHANGELOG.md seergdb
+      - run:
+          name: List Results
+          command: |
+            cd src
+            ls -l build/
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  build_and_release:
     jobs:
-      - say-hello
+      - build
