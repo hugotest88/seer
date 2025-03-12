@@ -21,42 +21,27 @@ jobs:
           name: Set Qt5 Environment
           command: echo 'export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5' >> $BASH_ENV
       - run:
-          name: Where Am I
-          command: |
-            pwd
-            ls -l
-            lscpu
-      - run:
-          name: Versions
-          command: g++ --version
-      - run:
           name: Configure CMake
           command: |
-            cd src
-            cmake -B $PWD/src/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 -DQTVERSION=QT5
+            cd seer/src
+            mkdir -p build
+            cd build
+            cmake -DQTVERSION=QT5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 ..
       - run:
-          name: Echo Qt Version
+          name: Build SeerGDB
           command: |
-            cd src
-            cmake -L $PWD/src/build | grep "QTVERSION"
+            cd seer/src/build
+            make seergdb
       - run:
-          name: Build
+          name: Install SeerGDB
           command: |
-            cd src
-            cmake --build $PWD/src/build --config ${BUILD_TYPE} --target seergdb --parallel $(nproc)
+            cd seer/src/build
+            sudo make install
       - run:
-          name: Tar
+          name: Package as .deb
           command: |
-            cd src/build
-            cp ../../LICENSE .
-            cp ../../CHANGELOG.md .
-            tar zcvf seergdb.tar.gz LICENSE CHANGELOG.md seergdb
-      - run:
-          name: List Results
-          command: |
-            cd src
-            ls -l build/
-
+            cd seer
+            dpkg-buildpackage
 workflows:
   build_and_release:
     jobs:
