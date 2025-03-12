@@ -27,4 +27,4 @@ workflows:
       - wait-job
       - hello-world-job:
           requires:
-            - wait-job
+            - wait-job: canceled
