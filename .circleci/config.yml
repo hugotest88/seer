@@ -23,9 +23,8 @@ jobs:
       - run:
           name: Configure CMake
           command: |
-            cd seer/src
-            mkdir -p build
-            cd build
+            mkdir -p seer/src/build
+            cd seer/src/build
             cmake -DQTVERSION=QT5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 ..
       - run:
           name: Build SeerGDB
