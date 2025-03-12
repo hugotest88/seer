@@ -21,6 +21,10 @@ jobs:
           name: Set Qt5 Environment
           command: echo 'export CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5' >> $BASH_ENV
       - run:
+          name: Find CMakeLists.txt
+          command: |
+            find . -name CMakeLists.txt -print
+      - run:
           name: Configure CMake
           command: |
             if [ -f seer/src/CMakeLists.txt ]; then 
