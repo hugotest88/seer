@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Configure CMake
           command: |
-            if [ -f seer/src/CMakeLists.txt ]; then
+            if [ -f seer/src/CMakeLists.txt ]; then 
               mkdir -p seer/src/build
               cd seer/src/build
               cmake -DQTVERSION=QT5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 ..
